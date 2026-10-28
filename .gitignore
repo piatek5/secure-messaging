@@ -1,0 +1,7 @@
+# Python and uv generated
+__pycache__
+.venv
+.pytest_cache/
+instance/
+
+.env

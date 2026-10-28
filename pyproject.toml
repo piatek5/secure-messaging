@@ -1,0 +1,14 @@
+[project]
+name = "secure-messaging"
+version = "0.1.0"
+description = "Zero-knowledge messaging web app with in-browser end-to-end encryption and two-factor authentication"
+readme = "README.md"
+authors = [
+    { name = "Borys Piątek", email = "bordowyrys1@gmail.com" }
+]
+requires-python = ">=3.15"
+dependencies = []
+
+[build-system]
+requires = ["uv_build>=0.13.6,<0.14.0"]
+build-backend = "uv_build"
