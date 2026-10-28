@@ -1,0 +1,30 @@
+name: checks
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        command: ["ruff format --check --diff", "pyright", "ruff check --output-format=github", "pytest"]
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        persist-credentials: false
+    - name: Install uv
+      uses: astral-sh/setup-uv@v10.3.3
+    - name: Install dependencies
+      run: |
+        uv sync --locked
+    - name: Format, type-check, lint, test
+      run: |
+        uv run ${{ matrix.command }}
