@@ -10,21 +10,40 @@ permissions:
   contents: read
 
 jobs:
-  check:
+  check_code:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         command: ["ruff format --check --diff", "pyright", "ruff check --output-format=github", "pytest"]
     steps:
-    - uses: actions/checkout@v7
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       with:
         persist-credentials: false
     - name: Install uv
-      uses: astral-sh/setup-uv@v10.3.3
+      uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2
     - name: Install dependencies
       run: |
         uv sync --locked
     - name: Format, type-check, lint, test
       run: |
-        uv run ${{ matrix.command }}
+        uv run --no-sync ${{ matrix.command }}
+
+  check_workflows:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        command: ["actionlint", "zizmor .github/workflows/"]
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      with:
+        persist-credentials: false
+    - name: Install uv
+      uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2
+    - name: Install dependencies
+      run: |
+        uv sync --locked --only-group workflows
+    - name: Lint and analyse
+      run: |
+        uv run --no-sync ${{ matrix.command }}

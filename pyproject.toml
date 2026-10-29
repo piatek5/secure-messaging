@@ -21,6 +21,10 @@ dev = [
     "pytest>=9.2.0",
     "ruff>=0.17.3",
 ]
+workflows = [
+    "actionlint-py>=1.7.12.25",
+    "zizmor>=1.31.1",
+]
 
 [tool.ruff]
 line-length = 100
