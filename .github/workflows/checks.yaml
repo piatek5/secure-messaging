@@ -27,7 +27,7 @@ jobs:
         uv sync --locked
     - name: Format, type-check, lint, test
       run: |
-        uv run ${{ matrix.command }}
+        uv run --no-sync ${{ matrix.command }}
 
   check_workflows:
     runs-on: ubuntu-latest
@@ -46,4 +46,4 @@ jobs:
         uv sync --locked --only-group workflows
     - name: Lint and analyse
       run: |
-        uv run ${{ matrix.command }}
+        uv run --no-sync ${{ matrix.command }}
