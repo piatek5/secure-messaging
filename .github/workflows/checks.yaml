@@ -10,14 +10,14 @@ permissions:
   contents: read
 
 jobs:
-  check:
+  check_code:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         command: ["ruff format --check --diff", "pyright", "ruff check --output-format=github", "pytest"]
     steps:
-    - uses: actions/checkout@v7
+    - uses: actions/checkout@v7.0.1
       with:
         persist-credentials: false
     - name: Install uv
@@ -28,3 +28,22 @@ jobs:
     - name: Format, type-check, lint, test
       run: |
         uv run ${{ matrix.command }}
+
+  check_workflows:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        command: ["ruff format --check --diff", "pyright", "ruff check --output-format=github", "pytest"]
+    steps:
+    - uses: actions/checkout@v7.0.1
+      with:
+        persist-credentials: false
+    - name: Run zizmor
+      uses: zizmorcore/zizmor-action@v0.8.0
+      with:
+        inputs: |
+          .github/workflows/*.yaml
+          .github/workflows/*.yml
+    - name: Run actionlint
+      uses: raven-actions/actionlint@v2.2.0
