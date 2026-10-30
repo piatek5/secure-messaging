@@ -3,11 +3,11 @@ name: PR_title
 on:
   pull_request:
     branches: [ "main" ]
-      types:
-      - opened
-      - reopened
-      - edited
-      - synchronize
+    types:
+    - opened
+    - reopened
+    - edited
+    - synchronize
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
