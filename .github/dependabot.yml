@@ -9,6 +9,8 @@ updates:
       action-deps:
         patterns:
           - "*"
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: uv
     directory: "/"
@@ -18,3 +20,5 @@ updates:
       uv-deps:
         patterns:
           - "*"
+    cooldown:
+      default-days: 7
