@@ -6,11 +6,15 @@ on:
   pull_request:
     branches: [ "main" ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 permissions:
   contents: read
 
 jobs:
-  check_code:
+  check_code: # zizmor: ignore[anonymous-definition]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -26,10 +30,11 @@ jobs:
       run: |
         uv sync --locked
     - name: Format, type-check, lint, test
-      run: |
+      run: | # zizmor: ignore[template-injection]
+        # static matrix values
         uv run --no-sync ${{ matrix.command }}
 
-  check_workflows:
+  check_workflows:  # zizmor: ignore[anonymous-definition]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -45,5 +50,6 @@ jobs:
       run: |
         uv sync --locked --only-group workflows
     - name: Lint and analyse
-      run: |
+      run: | # zizmor: ignore[template-injection]
+        # static matrix values
         uv run --no-sync ${{ matrix.command }}
