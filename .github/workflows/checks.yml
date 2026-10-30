@@ -14,12 +14,21 @@ permissions:
   contents: read
 
 jobs:
-  check_code: # zizmor: ignore[anonymous-definition]
+  check_code:
+    name: code (${{ matrix.check }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        command: ["ruff format --check --diff", "pyright", "ruff check --output-format=github", "pytest"]
+        include:
+          - check: type-check
+            command: "pyright"
+          - check: lint
+            command: "ruff check --output-format=github"
+          - check: format
+            command: "ruff format --check --diff"
+          - check: test
+            command: "pytest"
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       with:
@@ -29,17 +38,22 @@ jobs:
     - name: Install dependencies
       run: |
         uv sync --locked
-    - name: Format, type-check, lint, test
+    - name: Run check
       run: | # zizmor: ignore[template-injection]
         # static matrix values
         uv run --no-sync ${{ matrix.command }}
 
-  check_workflows:  # zizmor: ignore[anonymous-definition]
+  check_workflows:
+    name: workflows (${{ matrix.check }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        command: ["actionlint", "zizmor ."]
+        include:
+          - check: lint
+            command: "actionlint"
+          - check: analyse
+            command: "zizmor ."
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       with:
@@ -49,7 +63,7 @@ jobs:
     - name: Install dependencies
       run: |
         uv sync --locked --only-group workflows
-    - name: Lint and analyse
+    - name: Run check
       run: | # zizmor: ignore[template-injection]
         # static matrix values
         uv run --no-sync ${{ matrix.command }}
