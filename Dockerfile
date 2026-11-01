@@ -40,16 +40,16 @@ COPY --from=builder /app/.venv /app/.venv
 # Add the environment to PATH
 ENV PATH="/app/.venv/bin:$PATH"
 
-ARG USERNAME=non-root-user
+ARG USER_NAME=non-root-user
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 
 # Create the user
-RUN groupadd --gid $USER_GID $USERNAME \
-    && useradd --uid $USER_UID --gid $USER_GID --no-create-home $USERNAME
+RUN groupadd --gid $USER_GID $USER_NAME \
+    && useradd --uid $USER_UID --gid $USER_GID --no-create-home $USER_NAME
 
 # Set user
-USER $USERNAME
+USER $USER_NAME
 
 EXPOSE 8000
 
