@@ -5,6 +5,8 @@ from typing import Any
 
 from flask import Flask
 
+from secure_messaging.extensions import db
+
 
 def create_app(test_config: Mapping[str, Any] | None = None) -> Flask:
     app = Flask(__name__, instance_path=os.environ.get("SECURE_MESSAGING_INSTANCE_PATH"))
@@ -28,6 +30,8 @@ def create_app(test_config: Mapping[str, Any] | None = None) -> Flask:
 
     # Ensure the instance folder exists
     Path(app.instance_path).mkdir(parents=True, exist_ok=True)
+
+    db.init_app(app)
 
     @app.route("/api/health")
     def health():
