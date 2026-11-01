@@ -5,6 +5,7 @@ from typing import Any
 
 from flask import Flask
 
+from secure_messaging import models  # noqa: F401 (registers models with SQLAlchemy)
 from secure_messaging.extensions import db
 
 
