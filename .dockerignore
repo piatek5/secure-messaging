@@ -12,3 +12,6 @@
 !.python-version
 # README for pyproject.toml
 !README.md
+
+# Flask-migrate
+!migrations

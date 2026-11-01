@@ -1,5 +1,6 @@
 import sqlite3
 
+from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
@@ -11,6 +12,8 @@ class Base(DeclarativeBase):
 
 
 db = SQLAlchemy(model_class=Base)
+
+migrate = Migrate(render_as_batch=True)
 
 
 @event.listens_for(Engine, "connect")

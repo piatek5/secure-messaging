@@ -6,7 +6,7 @@ from typing import Any
 from flask import Flask
 
 from secure_messaging import models  # noqa: F401 (registers models with SQLAlchemy)
-from secure_messaging.extensions import db
+from secure_messaging.extensions import db, migrate
 
 
 def create_app(test_config: Mapping[str, Any] | None = None) -> Flask:
@@ -33,6 +33,8 @@ def create_app(test_config: Mapping[str, Any] | None = None) -> Flask:
     Path(app.instance_path).mkdir(parents=True, exist_ok=True)
 
     db.init_app(app)
+
+    migrate.init_app(app, db)
 
     @app.route("/api/health")
     def health():
