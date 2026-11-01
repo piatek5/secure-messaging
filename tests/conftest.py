@@ -1,6 +1,7 @@
 import pytest
 
 from secure_messaging import create_app
+from secure_messaging.extensions import db
 
 
 @pytest.fixture()
@@ -14,7 +15,9 @@ def app(monkeypatch, tmp_path):
         }
     )
 
-    yield app
+    with app.app_context():
+        db.create_all()
+        yield app
 
 
 @pytest.fixture()
