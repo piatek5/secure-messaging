@@ -42,3 +42,4 @@ extend-select = ["E", "W", "N", "S"]
 
 [tool.pyright]
 typeCheckingMode = "standard"
+exclude = ["migrations"]
