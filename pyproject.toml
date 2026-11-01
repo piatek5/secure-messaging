@@ -20,6 +20,7 @@ build-backend = "uv_build"
 dev = [
     "pyright>=1.1.414",
     "pytest>=9.2.0",
+    "python-dotenv>=1.2.4",
     "ruff>=0.17.3",
 ]
 workflows = [

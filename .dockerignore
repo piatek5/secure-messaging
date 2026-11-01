@@ -1,9 +1,10 @@
 # Make it a whitelist
 *
 
-# Include src but not __pycache__
+# Include src but not __pycache__ and instance
 !src
 **/__pycache__
+**/instance
 
 # Include UV and build files
 !pyproject.toml
