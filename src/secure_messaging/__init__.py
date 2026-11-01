@@ -40,4 +40,8 @@ def create_app(test_config: Mapping[str, Any] | None = None) -> Flask:
 
     app.register_blueprint(api_bp)
 
+    @app.get("/")
+    def index():
+        return app.send_static_file("index.html")
+
     return app
