@@ -4,13 +4,15 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase
-
+from flask_migrate import Migrate
 
 class Base(DeclarativeBase):
     pass
 
 
 db = SQLAlchemy(model_class=Base)
+
+migrate = Migrate(render_as_batch=True)
 
 
 @event.listens_for(Engine, "connect")
