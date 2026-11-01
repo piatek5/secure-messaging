@@ -2,9 +2,10 @@ import re
 
 from flask import Blueprint, request, session
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import selectinload
 
 from secure_messaging.extensions import db
-from secure_messaging.models import User
+from secure_messaging.models import User, Message
 
 bp = Blueprint("api", __name__, url_prefix="/api")
 
@@ -68,3 +69,70 @@ def who_am_i():
 def log_out():
     session.clear()
     return "", 204
+
+
+def message_to_dict(message: Message) -> dict:
+    return {
+        "id": message.id,
+        "sender": message.sender.username,
+        "recipient": message.recipient.username,
+        "body": message.body,
+        "created_at": message.created_at.isoformat(),
+        "read_at": message.read_at.isoformat() if message.read_at else None,
+    }
+
+
+@bp.post("/messages")
+def send_message():
+    user = current_user()
+    if user is None:
+        return {"error": "not logged in"}, 401
+
+    data = request.get_json(silent=True) or {}
+    recipient_name = data.get("recipient")
+    body = data.get("body")
+    if not isinstance(recipient_name, str) or not isinstance(body, str):
+        return {"error": "recipient and body required"}, 400
+    if not 1 <= len(body) <= 2000:
+        return {"error": "body must be 1-2000 characters"}, 400
+
+    recipient = db.session.execute(
+        db.select(User).where(User.username == recipient_name)
+    ).scalar_one_or_none()
+    if recipient is None:
+        return {"error": "unknown recipient"}, 404
+
+    message = Message(sender_id=user.id, recipient_id=recipient.id, body=body)
+    db.session.add(message)
+    db.session.commit()
+    return message_to_dict(message), 201
+
+
+@bp.get("/messages/inbox")
+def inbox():
+    user = current_user()
+    if user is None:
+        return {"error": "not logged in"}, 401
+
+    messages = db.session.execute(
+        db.select(Message)
+        .where(Message.recipient_id == user.id)
+        .order_by(Message.created_at.desc(), Message.id.desc())
+        .options(selectinload(Message.sender), selectinload(Message.recipient))
+    ).scalars().all()
+    return {"messages": [message_to_dict(m) for m in messages]}
+
+
+@bp.get("/messages/outbox")
+def outbox():
+    user = current_user()
+    if user is None:
+        return {"error": "not logged in"}, 401
+
+    messages = db.session.execute(
+        db.select(Message)
+        .where(Message.sender_id == user.id)
+        .order_by(Message.created_at.desc(), Message.id.desc())
+        .options(selectinload(Message.sender), selectinload(Message.recipient))
+    ).scalars().all()
+    return {"messages": [message_to_dict(m) for m in messages]}
