@@ -16,11 +16,16 @@ def create_app(test_config: Mapping[str, Any] | None = None) -> Flask:
     )
 
     if test_config is None:
-        # Load the instance config, if it exists, when not testing
-        app.config.from_pyfile("config.py", silent=True)
+        # Load the instance config from env when not testing
+        app.config.from_prefixed_env()
     else:
         # Load the test config if passed in
         app.config.from_mapping(test_config)
+
+    try:
+        print(os.environ["SECRET_KEY"])
+    except KeyError:
+        print("FLASK_SECRET_KEY does not exist")
 
     # Ensure the instance folder exists
     Path(app.instance_path).mkdir(parents=True, exist_ok=True)
