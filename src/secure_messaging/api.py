@@ -1,6 +1,6 @@
 import re
 
-from flask import Blueprint, request
+from flask import Blueprint, request, session
 from sqlalchemy.exc import IntegrityError
 
 from secure_messaging.extensions import db
@@ -32,3 +32,38 @@ def create_user():
         return {"error": "username taken"}, 409
 
     return {"id": user.id, "username": user.username}, 201
+
+
+def current_user() -> User | None:
+    user_id = session.get("user_id")
+    return db.session.get(User, user_id) if user_id is not None else None
+
+
+@bp.post("/session")
+def log_in():
+    data = request.get_json(silent=True) or {}
+    username = data.get("username")
+    if not isinstance(username, str):
+        return {"error": "username required"}, 400
+
+    user = db.session.execute(db.select(User).where(User.username == username)).scalar_one_or_none()
+    if user is None:
+        return {"error": "unknown user"}, 404
+
+    session.clear()
+    session["user_id"] = user.id
+    return {"id": user.id, "username": user.username}
+
+
+@bp.get("/session")
+def who_am_i():
+    user = current_user()
+    if user is None:
+        return {"error": "not logged in"}, 401
+    return {"id": user.id, "username": user.username}
+
+
+@bp.delete("/session")
+def log_out():
+    session.clear()
+    return "", 204
