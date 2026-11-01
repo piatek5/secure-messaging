@@ -17,6 +17,7 @@ def create_app(test_config: Mapping[str, Any] | None = None) -> Flask:
     database_path = Path(app.instance_path, "secure_messaging.sqlite")
     app.config.from_mapping(
         SQLALCHEMY_DATABASE_URI=f"sqlite:///{database_path}",
+        SESSION_COOKIE_SAMESITE="Lax",
     )
 
     if test_config is None:

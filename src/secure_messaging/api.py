@@ -39,6 +39,7 @@ def current_user() -> User | None:
     return db.session.get(User, user_id) if user_id is not None else None
 
 
+# Insecure stand-in logs in by username alone
 @bp.post("/session")
 def log_in():
     data = request.get_json(silent=True) or {}
