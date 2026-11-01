@@ -5,7 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
 from secure_messaging.extensions import db
-from secure_messaging.models import User, Message
+from secure_messaging.models import Message, User
 
 bp = Blueprint("api", __name__, url_prefix="/api")
 
@@ -114,12 +114,16 @@ def inbox():
     if user is None:
         return {"error": "not logged in"}, 401
 
-    messages = db.session.execute(
-        db.select(Message)
-        .where(Message.recipient_id == user.id)
-        .order_by(Message.created_at.desc(), Message.id.desc())
-        .options(selectinload(Message.sender), selectinload(Message.recipient))
-    ).scalars().all()
+    messages = (
+        db.session.execute(
+            db.select(Message)
+            .where(Message.recipient_id == user.id)
+            .order_by(Message.created_at.desc(), Message.id.desc())
+            .options(selectinload(Message.sender), selectinload(Message.recipient))
+        )
+        .scalars()
+        .all()
+    )
     return {"messages": [message_to_dict(m) for m in messages]}
 
 
@@ -129,10 +133,14 @@ def outbox():
     if user is None:
         return {"error": "not logged in"}, 401
 
-    messages = db.session.execute(
-        db.select(Message)
-        .where(Message.sender_id == user.id)
-        .order_by(Message.created_at.desc(), Message.id.desc())
-        .options(selectinload(Message.sender), selectinload(Message.recipient))
-    ).scalars().all()
+    messages = (
+        db.session.execute(
+            db.select(Message)
+            .where(Message.sender_id == user.id)
+            .order_by(Message.created_at.desc(), Message.id.desc())
+            .options(selectinload(Message.sender), selectinload(Message.recipient))
+        )
+        .scalars()
+        .all()
+    )
     return {"messages": [message_to_dict(m) for m in messages]}
