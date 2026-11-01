@@ -5,17 +5,19 @@ from typing import Any
 
 from flask import Flask
 
-from secure_messaging import models  # noqa: F401 (registers models with SQLAlchemy)
 from secure_messaging.extensions import db, migrate
 
 
 def create_app(test_config: Mapping[str, Any] | None = None) -> Flask:
+    from secure_messaging.api import bp as api_bp
+
     app = Flask(__name__, instance_path=os.environ.get("SECURE_MESSAGING_INSTANCE_PATH"))
 
     # Defaults
     database_path = Path(app.instance_path, "secure_messaging.sqlite")
     app.config.from_mapping(
         SQLALCHEMY_DATABASE_URI=f"sqlite:///{database_path}",
+        SESSION_COOKIE_SAMESITE="Lax",
     )
 
     if test_config is None:
@@ -36,8 +38,6 @@ def create_app(test_config: Mapping[str, Any] | None = None) -> Flask:
 
     migrate.init_app(app, db)
 
-    @app.route("/api/health")
-    def health():
-        return {"status": "ok"}
+    app.register_blueprint(api_bp)
 
     return app
