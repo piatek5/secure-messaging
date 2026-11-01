@@ -22,10 +22,9 @@ def create_app(test_config: Mapping[str, Any] | None = None) -> Flask:
         # Load the test config if passed in
         app.config.from_mapping(test_config)
 
-    try:
-        print(os.environ["SECRET_KEY"])
-    except KeyError:
-        print("FLASK_SECRET_KEY does not exist")
+    # Fail fast instead of running with an insecure default key
+    if not app.config.get("SECRET_KEY"):
+        raise RuntimeError("SECRET_KEY is not set, set FLASK_SECRET_KEY in the environment")
 
     # Ensure the instance folder exists
     Path(app.instance_path).mkdir(parents=True, exist_ok=True)
