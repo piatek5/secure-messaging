@@ -2,15 +2,15 @@ const encoder = new TextEncoder();
 const PBKDF2_ITERATIONS = 600_000;
 
 export function toBase64(bytes) {
-    return btoa(String.fromCharCode(...bytes))
+    return btoa(String.fromCharCode(...bytes));
 }
 
 export function fromBase64(text) {
-  return Uint8Array.from(atob(text), (char) => char.charCodeAt(0));
+    return Uint8Array.from(atob(text), (char) => char.charCodeAt(0));
 }
 
 export function randomBytes(length) {
-  return crypto.getRandomValues(new Uint8Array(length));
+    return crypto.getRandomValues(new Uint8Array(length));
 }
 
 export async function deriveKeys(password, salt) {

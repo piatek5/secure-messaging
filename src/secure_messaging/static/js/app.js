@@ -74,5 +74,6 @@ const session = await api("GET", "/api/session");
 showAuth();
 if (session.ok) {
     usernameInput.value = session.data.username;
+    authError.textContent = "Enter your password to unlock.";
     passwordInput.focus();
 }
