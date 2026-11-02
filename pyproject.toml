@@ -39,7 +39,7 @@ extend-exclude = ["migrations"]
 extend-select = ["E", "W", "N", "S"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S101"]
+"tests/**" = ["S101", "S106"]
 
 [tool.pyright]
 typeCheckingMode = "standard"
