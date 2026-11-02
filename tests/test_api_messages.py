@@ -1,7 +1,11 @@
+from helpers import log_in, sign_up
+
+
 def sign_up_and_log_in(client, username):
     # The test client holds one session, so this logs out whoever was logged in before
-    client.post("/api/users", json={"username": username})
-    response = client.post("/api/session", json={"username": username})
+    sign_up(client, username)
+    response = log_in(client, username)
+
     assert response.status_code == 200
 
 
@@ -24,7 +28,7 @@ def test_send_to_unknown_recipient(client):
 
 
 def test_send_empty_body(client):
-    client.post("/api/users", json={"username": "bob"})
+    sign_up(client, "bob")
     sign_up_and_log_in(client, "alice")
 
     response = send(client, "bob", "")
@@ -35,6 +39,7 @@ def test_send_empty_body(client):
 def test_send_missing_fields(client):
     sign_up_and_log_in(client, "alice")
 
+    # Send no body
     response = client.post("/api/messages", json={"recipient": "bob"})
 
     assert response.status_code == 400
@@ -46,7 +51,7 @@ def test_inbox_requires_login(client):
 
 
 def test_message_lands_in_outbox_and_inbox(client):
-    client.post("/api/users", json={"username": "bob"})
+    sign_up(client, "bob")
     sign_up_and_log_in(client, "alice")
 
     response = send(client, "bob", "Hi Bob!")
@@ -70,7 +75,7 @@ def test_message_lands_in_outbox_and_inbox(client):
 
 
 def test_inbox_is_newest_first(client):
-    client.post("/api/users", json={"username": "bob"})
+    sign_up(client, "bob")
     sign_up_and_log_in(client, "alice")
     send(client, "bob", "first")
     send(client, "bob", "second")
