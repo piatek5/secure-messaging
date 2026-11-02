@@ -1,9 +1,11 @@
+from helpers import make_db_user
+
 from secure_messaging.extensions import db
 from secure_messaging.models import Message, User
 
 
 def test_user_round_trip(app):
-    alice = User(username="alice")
+    alice = make_db_user(username="alice")
     db.session.add(alice)
     db.session.commit()
     alice_id = alice.id
@@ -17,8 +19,8 @@ def test_user_round_trip(app):
 
 
 def test_message_round_trip(app):
-    alice = User(username="alice")
-    bob = User(username="bob")
+    alice = make_db_user(username="alice")
+    bob = make_db_user(username="bob")
     db.session.add_all([alice, bob])
     db.session.commit()
 

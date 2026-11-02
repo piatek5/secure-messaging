@@ -1,13 +1,16 @@
-def test_log_in_unknown(client):
-    response = client.post("/api/session", json={"username": "no_bob_here"})
+from helpers import log_in, sign_up
 
-    assert response.status_code == 404
+
+def test_log_in_unknown(client):
+    response = log_in(client, "no_bob_here")
+
+    assert response.status_code == 401
 
 
 def test_log_in_known(client):
-    client.post("/api/users", json={"username": "alice"})
+    response = sign_up(client, "alice")
 
-    response = client.post("/api/session", json={"username": "alice"})
+    response = log_in(client, "alice")
 
     assert response.status_code == 200
 
@@ -22,11 +25,10 @@ def test_get_current_user_not_logged(client):
     assert response.status_code == 401
 
 
-def test_log_in_log_out_get_current_user(client):
-    client.post("/users", json={"username": "alice"})
+def test_sign_in_log_in_log_out_get_current_user(client):
+    sign_up(client, "alice")
 
-    # Log in
-    client.post("/api/session", json={"username": "alice"})
+    log_in(client, "alice")
 
     # Log out
     response = client.delete("/api/session")

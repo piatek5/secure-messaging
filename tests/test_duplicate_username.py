@@ -1,14 +1,16 @@
 import pytest
+from helpers import make_db_user
 from sqlalchemy.exc import IntegrityError
 
 from secure_messaging.extensions import db
-from secure_messaging.models import User
 
 
 def test_duplicate_username(app):
-    alice = User(username="alice")
-    the_other_alice = User(username="alice")
+    alice = make_db_user(username="alice")
     db.session.add(alice)
+    db.session.commit()
+
+    the_other_alice = make_db_user(username="alice")
     db.session.add(the_other_alice)
 
     with pytest.raises(IntegrityError):
