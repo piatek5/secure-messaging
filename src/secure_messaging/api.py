@@ -87,8 +87,8 @@ def log_in():
     username = data.get("username")
     auth_token = data.get("auth_token")
     if (
-        not isinstance(username, str) 
-        or not isinstance(auth_token, str) 
+        not isinstance(username, str)
+        or not isinstance(auth_token, str)
         or not is_base64_of_length(auth_token, 32)
     ):
         return {"error": "invalid credentials format"}, 400

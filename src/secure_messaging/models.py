@@ -10,7 +10,7 @@ class User(Base):
     __tablename__ = "user"
     id: Mapped[int] = mapped_column(primary_key=True)
     password_hash: Mapped[str] = mapped_column(String(255))
-    kdf_salt: Mapped[str] = mapped_column(String(24)) # 16 random bytes in base64
+    kdf_salt: Mapped[str] = mapped_column(String(24))  # 16 random bytes in base64
     username: Mapped[str] = mapped_column(String(32), unique=True)
     created_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now())
 
