@@ -15,7 +15,7 @@ export function randomBytes(length) {
 
 export async function deriveKeys(password, salt) {
     const passwordKey = await crypto.subtle.importKey(
-        "raw", encoder.encode(password.normalize("NKFC")), "PBKDF2", false, ["deriveBits"]
+        "raw", encoder.encode(password.normalize("NFKC")), "PBKDF2", false, ["deriveBits"]
     );
     const baseBits = await crypto.subtle.deriveBits(
         { name: "PBKDF2", hash: "SHA-256", salt, iterations: PBKDF2_ITERATIONS }, passwordKey, 256
