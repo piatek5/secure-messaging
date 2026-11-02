@@ -7,7 +7,18 @@
     <script type="module" src="/static/js/app.js"></script>
 </head>
 <body>
-    <h1>Hi</h1>
-    <p>API status: <span id="status">checking...</span></p>
+    <section id="auth-view" hidden>
+        <form id="auth-form">
+            <label>Username <input id="username" name="username" required autocomplete="username"></label>
+            <button type="submit">Log in</button>
+            <button type="button" id="signup-button">Sign up</button>
+        </form>
+        <p id="auth-error" role="alert"></p>
+    </section>
+
+    <section id="main-view" hidden>
+        <p>Logged in as <strong id="current-user"></strong></p>
+        <button type="button" id="logout-button">Log out</button>
+    </section>
 </body>
 </html>
