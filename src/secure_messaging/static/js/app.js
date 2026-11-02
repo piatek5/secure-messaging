@@ -1,4 +1,5 @@
 import { api } from "./api.js"
+import { clearMessages, showBox } from "./message.js";
 
 const authView = document.querySelector("#auth-view");
 const mainView = document.querySelector("#main-view");
@@ -16,6 +17,7 @@ function showMain(user) {
     document.querySelector("#current-user").textContent = user.username;
     authView.hidden = true;
     mainView.hidden = false;
+    showBox("inbox");
 }
 
 async function logIn() {
@@ -44,6 +46,7 @@ document.querySelector("#signup-button").addEventListener("click", async () => {
 
 document.querySelector("#logout-button").addEventListener("click", async () =>{
     await api("DELETE", "/api/session");
+    clearMessages();
     showAuth();
 });
 

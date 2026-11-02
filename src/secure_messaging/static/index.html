@@ -19,6 +19,26 @@
     <section id="main-view" hidden>
         <p>Logged in as <strong id="current-user"></strong></p>
         <button type="button" id="logout-button">Log out</button>
+
+        <h2>New message</h2>
+        <form id="compose-form">
+            <label>To <input id="recipient" name="recipient" required></label>
+            <label>Message <textarea id="body" name="body" required maxlength="2000"></textarea></label>
+            <button type="submit">Send</button>
+        </form>
+        <p id="compose-status" role="status"></p>
+
+        <h2>Messages</h2>
+        <button type="button" id="show-inbox">Inbox</button>
+        <button type="button" id="show-outbox">Sent</button>
+        <ul id="message-list"></ul>
     </section>
+
+    <template id="message-template">
+    <li>
+        <p><strong class="people"></strong> <small class="time"></small></p>
+        <p class="body"></p>
+    </li>
+    </template>
 </body>
 </html>
