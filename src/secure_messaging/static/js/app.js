@@ -1,6 +1,7 @@
 import { api } from "./api.js"
 import { clearMessages, showBox } from "./message.js";
-import { deriveKeys, fromBase64, randomBytes, toBase64 } from "./crypto.js";
+import { deriveKeys, fromBase64, randomBytes, toBase64, createIdentity, unlockIdentity } from "./crypto.js";
+import { setIdentity } from "./identity.js";
 
 const authView = document.querySelector("#auth-view");
 const mainView = document.querySelector("#main-view");
@@ -22,8 +23,6 @@ function showMain(user) {
     showBox("inbox");
 }
 
-let masterKey = null;
-
 async function logIn() {
     const username = usernameInput.value;
     const salt = await api("GET", `/api/users/${encodeURIComponent(username)}/salt`);
@@ -34,7 +33,12 @@ async function logIn() {
     const keys = await deriveKeys(passwordInput.value, fromBase64(salt.data.kdf_salt));
     const result = await api("POST", "/api/session", { username, auth_token: keys.authToken });
     if (result.ok) {
-        masterKey = keys.masterKey;
+        try {
+            setIdentity(await unlockIdentity(result.data, keys.masterKey));
+        } catch {
+            authError.textContent = "Could not unlock your keys.";
+            return;
+        }
         passwordInput.value = "";
         authError.textContent = "";
         showMain(result.data);
@@ -51,9 +55,10 @@ authForm.addEventListener("submit", async (event) => {
 document.querySelector("#signup-button").addEventListener("click", async () => {
     if (!authForm.reportValidity()) return;
     const salt = randomBytes(16);
-    const { authToken } = await deriveKeys(passwordInput.value, salt);
+    const { authToken, masterKey } = await deriveKeys(passwordInput.value, salt);
+    const identity = await createIdentity(masterKey);
     const result = await api("POST", "/api/users", {
-        username: usernameInput.value, kdf_salt: toBase64(salt), auth_token: authToken,
+        username: usernameInput.value, kdf_salt: toBase64(salt), auth_token: authToken, ...identity,
     });
     if (result.ok) {
         await logIn();
@@ -65,7 +70,7 @@ document.querySelector("#signup-button").addEventListener("click", async () => {
 document.querySelector("#logout-button").addEventListener("click", async () =>{
     await api("DELETE", "/api/session");
     clearMessages();
-    masterKey = null;
+    setIdentity(null);
     showAuth();
 });
 

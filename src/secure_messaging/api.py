@@ -32,6 +32,22 @@ def is_base64_of_length(value: str, length: int) -> bool:
         return False
 
 
+def is_base64_up_to(value: str, max_length: int) -> bool:
+    try:
+        return 0 < len(base64.b64decode(value, validate=True)) <= max_length
+    except ValueError:
+        return False
+
+
+def own_keys(user: User) -> dict:
+    return {
+        "enc_public_key": user.enc_public_key,
+        "sign_public_key": user.sign_public_key,
+        "wrapped_enc_private_key": user.wrapped_enc_private_key,
+        "wrapped_sign_private_key": user.wrapped_sign_private_key,
+    }
+
+
 @bp.get("/health")
 def health():
     return {"status": "ok"}
@@ -46,15 +62,35 @@ def create_user():
 
     kdf_salt = data.get("kdf_salt")
     auth_token = data.get("auth_token")
+    enc_public_key = data.get("enc_public_key")
+    sign_public_key = data.get("sign_public_key")
+    wrapped_enc_private_key = data.get("wrapped_enc_private_key")
+    wrapped_sign_private_key = data.get("wrapped_sign_private_key")
     if (
         not isinstance(kdf_salt, str)
         or not isinstance(auth_token, str)
+        or not isinstance(enc_public_key, str)
+        or not isinstance(sign_public_key, str)
+        or not isinstance(wrapped_enc_private_key, str)
+        or not isinstance(wrapped_sign_private_key, str)
         or not is_base64_of_length(kdf_salt, 16)
         or not is_base64_of_length(auth_token, 32)
+        or not is_base64_of_length(enc_public_key, 32)
+        or not is_base64_of_length(sign_public_key, 32)
+        or not is_base64_up_to(wrapped_enc_private_key, 256)
+        or not is_base64_up_to(wrapped_sign_private_key, 256)
     ):
         return {"error": "invalid credentials format"}, 400
 
-    user = User(username=username, password_hash=ph.hash(auth_token), kdf_salt=kdf_salt)
+    user = User(
+        username=username,
+        password_hash=ph.hash(auth_token),
+        kdf_salt=kdf_salt,
+        enc_public_key=enc_public_key,
+        sign_public_key=sign_public_key,
+        wrapped_enc_private_key=wrapped_enc_private_key,
+        wrapped_sign_private_key=wrapped_sign_private_key,
+    )
     db.session.add(user)
     try:
         db.session.commit()
@@ -74,6 +110,16 @@ def get_salt(username: str):
     key = current_app.config["SECRET_KEY"].encode()
     fake = hmac.new(key, username.encode(), hashlib.sha256).digest()[:16]
     return {"kdf_salt": base64.b64encode(fake).decode()}
+
+
+@bp.get("/users/<username>/keys")
+def get_public_keys(username: str):
+    if current_user() is None:
+        return {"error": "not logged in"}, 401
+    user = db.session.execute(db.select(User).where(User.username == username)).scalar_one_or_none()
+    if user is None:
+        return {"error": "unknown user"}, 404
+    return {"enc_public_key": user.enc_public_key, "sign_public_key": user.sign_public_key}
 
 
 def current_user() -> User | None:
@@ -104,7 +150,7 @@ def log_in():
 
     session.clear()
     session["user_id"] = user.id
-    return {"id": user.id, "username": user.username}
+    return {"id": user.id, "username": user.username, **own_keys(user)}
 
 
 @bp.get("/session")

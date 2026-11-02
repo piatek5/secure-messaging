@@ -11,6 +11,10 @@ class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     password_hash: Mapped[str] = mapped_column(String(255))
     kdf_salt: Mapped[str] = mapped_column(String(24))  # 16 random bytes in base64
+    enc_public_key: Mapped[str] = mapped_column(String(44))  # 32 bytes in base64
+    sign_public_key: Mapped[str] = mapped_column(String(44))  # 32 bytes in base64
+    wrapped_enc_private_key: Mapped[str] = mapped_column(Text)
+    wrapped_sign_private_key: Mapped[str] = mapped_column(Text)
     username: Mapped[str] = mapped_column(String(32), unique=True)
     created_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now())
 
