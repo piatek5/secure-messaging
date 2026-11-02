@@ -1,6 +1,12 @@
+import base64
+import hashlib
+import hmac
 import re
+from functools import cache
 
-from flask import Blueprint, request, session
+from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
+from flask import Blueprint, current_app, request, session
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
@@ -9,7 +15,21 @@ from secure_messaging.models import Message, User
 
 bp = Blueprint("api", __name__, url_prefix="/api")
 
+ph = PasswordHasher()
+
 USERNAME_RE = re.compile(r"[a-zA-Z0-9_]{3,32}")
+
+
+@cache
+def dummy_hash() -> str:
+    return ph.hash("dummy")
+
+
+def is_base64_of_length(value: str, length: int) -> bool:
+    try:
+        return len(base64.b64decode(value, validate=True)) == length
+    except ValueError:
+        return False
 
 
 @bp.get("/health")
@@ -24,7 +44,17 @@ def create_user():
     if not isinstance(username, str) or not USERNAME_RE.fullmatch(username):
         return {"error": "username must be 3-32 letters, digits or _"}, 400
 
-    user = User(username=username)
+    kdf_salt = data.get("kdf_salt")
+    auth_token = data.get("auth_token")
+    if (
+        not isinstance(kdf_salt, str)
+        or not isinstance(auth_token, str)
+        or not is_base64_of_length(kdf_salt, 16)
+        or not is_base64_of_length(auth_token, 32)
+    ):
+        return {"error": "invalid credentials format"}, 400
+
+    user = User(username=username, password_hash=ph.hash(auth_token), kdf_salt=kdf_salt)
     db.session.add(user)
     try:
         db.session.commit()
@@ -35,22 +65,38 @@ def create_user():
     return {"id": user.id, "username": user.username}, 201
 
 
+@bp.get("/users/<username>/salt")
+def get_salt(username: str):
+    user = db.session.execute(db.select(User).where(User.username == username)).scalar_one_or_none()
+    if user is not None:
+        return {"kdf_salt": user.kdf_salt}
+    # Generate a stable fake salt
+    key = current_app.config["SECRET_KEY"].encode()
+    fake = hmac.new(key, username.encode(), hashlib.sha256).digest()[:16]
+    return {"kdf_salt": base64.b64encode(fake).decode()}
+
+
 def current_user() -> User | None:
     user_id = session.get("user_id")
     return db.session.get(User, user_id) if user_id is not None else None
 
 
-# Insecure stand-in logs in by username alone
 @bp.post("/session")
 def log_in():
     data = request.get_json(silent=True) or {}
     username = data.get("username")
-    if not isinstance(username, str):
-        return {"error": "username required"}, 400
+    auth_token = data.get("auth_token")
+    if not isinstance(username, str) or not isinstance(auth_token, str):
+        return {"error": "username and auth_token required"}, 400
 
     user = db.session.execute(db.select(User).where(User.username == username)).scalar_one_or_none()
+    # Run Argon2 no matter if the user exists
+    try:
+        ph.verify(user.password_hash if user else dummy_hash(), auth_token)
+    except VerifyMismatchError:
+        return {"error": "wrong username or password"}, 401
     if user is None:
-        return {"error": "unknown user"}, 404
+        return {"error": "wrong username or password"}, 401
 
     session.clear()
     session["user_id"] = user.id
