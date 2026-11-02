@@ -66,8 +66,11 @@ def test_sign_up_malformed_credentials(client):
         (None, AUTH_TOKEN),
         (KDF_SALT, None),
     ]:
-        response = client.post(
-            "/api/users",
-            json={"username": "alice", "kdf_salt": kdf_salt, "auth_token": auth_token},
+        response = sign_up(
+            client, 
+            username="alice", 
+            kdf_salt=kdf_salt, 
+            auth_token=auth_token
         )
+
         assert response.status_code == 400
