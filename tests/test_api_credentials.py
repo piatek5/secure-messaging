@@ -145,7 +145,7 @@ def test_failed_login_returns_no_keys(client):
     assert response.status_code == 401
     assert "enc_public_key" not in response.json
     assert "sign_public_key" not in response.json
-    assert "wrapped_sign_private_key" not in response.json
+    assert "wrapped_enc_private_key" not in response.json
     assert "wrapped_sign_private_key" not in response.json
 
 
