@@ -86,8 +86,12 @@ def log_in():
     data = request.get_json(silent=True) or {}
     username = data.get("username")
     auth_token = data.get("auth_token")
-    if not isinstance(username, str) or not isinstance(auth_token, str):
-        return {"error": "username and auth_token required"}, 400
+    if (
+        not isinstance(username, str) 
+        or not isinstance(auth_token, str) 
+        or not is_base64_of_length(auth_token, 32)
+    ):
+        return {"error": "invalid credentials format"}, 400
 
     user = db.session.execute(db.select(User).where(User.username == username)).scalar_one_or_none()
     # Run Argon2 no matter if the user exists
