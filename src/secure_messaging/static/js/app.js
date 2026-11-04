@@ -1,7 +1,7 @@
 import { api } from "./api.js"
 import { clearMessages, showBox } from "./message.js";
-import { deriveKeys, fromBase64, randomBytes, toBase64, createIdentity, unlockIdentity } from "./crypto.js";
-import { setIdentity } from "./identity.js";
+import { deriveKeys, fromBase64, randomBytes, toBase64, createIdentity, unlockIdentity, keyFingerprint } from "./crypto.js";
+import { setIdentity, getIdentity } from "./identity.js";
 
 const authView = document.querySelector("#auth-view");
 const mainView = document.querySelector("#main-view");
@@ -16,11 +16,14 @@ function showAuth() {
     usernameInput.focus();
 }
 
-function showMain(user) {
+async function showMain(user) {
     document.querySelector("#current-user").textContent = user.username;
     authView.hidden = true;
     mainView.hidden = false;
-    showBox("inbox");
+    const identity = getIdentity();
+    const fingerprint = await keyFingerprint(identity.encPublicKey, identity.signPublicKey);
+    document.querySelector("#my-fingerprint").textContent = fingerprint;
+    showBox("inbox");   
 }
 
 async function logIn() {
