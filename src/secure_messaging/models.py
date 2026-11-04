@@ -22,10 +22,13 @@ class User(Base):
 class Message(Base):
     __tablename__ = "message"
     id: Mapped[int] = mapped_column(primary_key=True)
+    ciphertext: Mapped[str] = mapped_column(Text)
+    key_for_recipient: Mapped[str] = mapped_column(String(124))  # 92 bytes in base64
+    key_for_sender: Mapped[str] = mapped_column(String(124))  # 92 bytes in base64
+    signature: Mapped[str] = mapped_column(String(88))  # 64 bytes in base64
     sender_id: Mapped[int] = mapped_column(ForeignKey(User.id), index=True)
     sender: Mapped[User] = relationship(foreign_keys=[sender_id])
     recipient_id: Mapped[int] = mapped_column(ForeignKey(User.id), index=True)
     recipient: Mapped[User] = relationship(foreign_keys=[recipient_id])
-    body: Mapped[str] = mapped_column(Text)
     created_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now())
     read_at: Mapped[datetime.datetime | None]
