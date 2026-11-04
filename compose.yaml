@@ -3,6 +3,7 @@ services:
     build: .
     environment:
       FLASK_SECRET_KEY: ${FLASK_SECRET_KEY:?set FLASK_SECRET_KEY in .env}
+      FLASK_SESSION_COOKIE_SECURE: "true"
     volumes:
       - app-data:/app/instance
     restart: unless-stopped
