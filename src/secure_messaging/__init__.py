@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any
 
 from flask import Flask
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from secure_messaging.extensions import db, migrate
 
@@ -12,6 +13,8 @@ def create_app(test_config: Mapping[str, Any] | None = None) -> Flask:
     from secure_messaging.api import bp as api_bp
 
     app = Flask(__name__, instance_path=os.environ.get("SECURE_MESSAGING_INSTANCE_PATH"))
+
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
 
     # Defaults
     database_path = Path(app.instance_path, "secure_messaging.sqlite")

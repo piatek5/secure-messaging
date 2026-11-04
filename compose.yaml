@@ -3,10 +3,22 @@ services:
     build: .
     environment:
       FLASK_SECRET_KEY: ${FLASK_SECRET_KEY:?set FLASK_SECRET_KEY in .env}
-    ports:
-      - "127.0.0.1:8000:8000"
     volumes:
       - app-data:/app/instance
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:1.31.8-alpine@sha256:2db7d28517d1fba17c2da3210395f7be11a11b419246ad0da2edf782af72f367
+    ports:
+      - "127.0.0.1:80:80"
+      - "127.0.0.1:443:443"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./certs:/etc/nginx/certs:ro
+      - ./src/secure_messaging/static:/srv/static:ro
+    depends_on:
+      web:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:
