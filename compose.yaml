@@ -1,0 +1,13 @@
+services:
+  web:
+    build: .
+    environment:
+      FLASK_SECRET_KEY: ${FLASK_SECRET_KEY:?set FLASK_SECRET_KEY in .env}
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - app-data:/app/instance
+    restart: unless-stopped
+
+volumes:
+  app-data:
