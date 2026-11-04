@@ -19,6 +19,7 @@
 
     <section id="main-view" hidden>
         <p>Logged in as <strong id="current-user"></strong></p>
+        <p>Your code: <strong id="my-fingerprint"></strong></p>
         <button type="button" id="logout-button">Log out</button>
 
         <h2>New message</h2>
@@ -38,6 +39,7 @@
     <template id="message-template">
     <li>
         <p><strong class="people"></strong> <small class="time"></small></p>
+        <p class="warning" role="alert" hidden></p>
         <p class="body"></p>
     </li>
     </template>
