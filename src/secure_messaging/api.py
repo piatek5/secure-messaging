@@ -191,8 +191,7 @@ def send_message():
 
     data = request.get_json(silent=True) or {}
 
-    fields = ("ciphertext", "key_for_recipient", "key_for_sender", "signature", 
-              "recipient")
+    fields = ("ciphertext", "key_for_recipient", "key_for_sender", "signature", "recipient")
     if not all(isinstance(data.get(field), str) for field in fields):
         return {"error": "recipient and encrypted fields required"}, 400
     if (
@@ -202,13 +201,12 @@ def send_message():
         or not is_base64_of_length(data["signature"], 64)
     ):
         return {"error": "invalid encrypted message format"}, 400
-    
+
     recipient_name = data.get("recipient")
     ciphertext = data.get("ciphertext")
     key_for_recipient = data.get("key_for_recipient")
     key_for_sender = data.get("key_for_sender")
     signature = data.get("signature")
-
 
     recipient = db.session.execute(
         db.select(User).where(User.username == recipient_name)
@@ -217,12 +215,12 @@ def send_message():
         return {"error": "unknown recipient"}, 404
 
     message = Message(
-        sender_id=user.id, 
-        recipient_id=recipient.id, 
+        sender_id=user.id,
+        recipient_id=recipient.id,
         ciphertext=ciphertext,
         key_for_recipient=key_for_recipient,
         key_for_sender=key_for_sender,
-        signature=signature
+        signature=signature,
     )
 
     db.session.add(message)
