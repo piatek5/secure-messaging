@@ -34,7 +34,7 @@ async function logIn() {
     const result = await api("POST", "/api/session", { username, auth_token: keys.authToken });
     if (result.ok) {
         try {
-            setIdentity(await unlockIdentity(result.data, keys.masterKey));
+            setIdentity({ username: result.data.username, ...await unlockIdentity(result.data, keys.masterKey) });
         } catch {
             authError.textContent = "Could not unlock your keys.";
             return;
