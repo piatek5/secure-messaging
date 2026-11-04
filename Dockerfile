@@ -37,8 +37,15 @@ WORKDIR /app
 # Copy the environment, but not the source code
 COPY --from=builder /app/.venv /app/.venv
 
+# Copy the database migrations
+COPY --from=builder /app/migrations /app/migrations
+
 # Add the environment to PATH
-ENV PATH="/app/.venv/bin:$PATH"
+ENV PATH="/app/.venv/bin:$PATH" \
+    # Tells the flask command the app name to load it
+    FLASK_APP=secure_messaging \
+    # Database directory
+    SECURE_MESSAGING_INSTANCE_PATH=/app/instance
 
 ARG USER_NAME=non-root-user
 ARG USER_UID=1000
@@ -48,13 +55,16 @@ ARG USER_GID=$USER_UID
 RUN groupadd --gid $USER_GID $USER_NAME \
     && useradd --uid $USER_UID --gid $USER_GID --no-create-home $USER_NAME
 
+# Create database directory and make user own it
+RUN mkdir /app/instance && chown $USER_NAME:$USER_NAME /app/instance
+
 # Set user
 USER $USER_NAME
 
 EXPOSE 8000
 
-# Using Python standard library to health probe (no curl)
+# Using Python standard library to health probe (because curl is absent)
 HEALTHCHECK CMD ["python",  "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health')"]
 
 # Run the application
-CMD ["gunicorn", "secure_messaging:create_app()", "--no-control-socket", "--bind", "0.0.0.0:8000"]
+CMD ["sh", "-c", "flask db upgrade && exec gunicorn 'secure_messaging:create_app()' --no-control-socket --bind 0.0.0.0:8000"]
